@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>阿里云滑块验证示例</title>
+    <!-- 引入 jQuery库 -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- 引入阿里云滑块验证JS SDK -->
+    <script src="https://g.alicdn.com/AWSC/AWSC/awsc.js"></script>
+
+    <!-- 样式定义 -->
+    <style>
+        .login-form {
+            width: 400px;
+            margin: 0 auto;
+            padding-top: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 40px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            outline: none;
+            padding: 5px 10px;
+            font-size: 16px;
+        }
+
+        .nc-scale {
+            width: 300px;
+            height: 40px;
+            background-color: #f2f4f5;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .nc-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+        }
+
+        .form-button {
+            width: 100%;
+            height: 40px;
+            border-radius: 5px;
+            background-color: #5799ed;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .form-button:hover {
+            background-color: #367cd8;
+        }
+
+        .form-button:active {
+            background-color: #1c589b;
+        }
+    </style>
+
+    <!-- JS代码定义 -->
+    <script>
+        // 阿里云滑块验证回调函数
+        // 存储滑块验证后得到的session和token
+        let sessionid;
+        let token;
+        let sig;
+
+        // 阿里云滑块验证回调函数
+        function onAWSCaptchaVerify(data) {
+            console.log(data)
+            // 存储session和token值
+            sessionid = data.csessionid;
+            token = data.sig;
+            console.log("Session ID: " + sessionid);
+            console.log("Token: " + token);
+        }
+
+
+        // 页面加载完成后初始化阿里云滑块验证组件
+        $(document).ready(function () {
+            AWSC.use("nc", function (state, module) {
+                window.nc = module.init({
+                    appkey: "FFFF00000000016C7013",
+                    scene: "register",
+                    renderTo: "nc",
+                    success: function (data) {
+                        console.log(data)
+                        sessionid = data.sessionId;
+                        token = data.token;
+                        sig = data.sig;
+                    },
+                });
+            });
+
+            // 绑定登录按钮的click事件，使用AJAX发送请求到后端
+            $("#login-btn").on("click", function (event) {
+                // 阻止默认表单提交事件
+                event.preventDefault();
+
+                // 获取表单信息
+                let username = $('#username').val();
+                let password = $('#password').val();
+
+                // 验证用户名和密码是否为空
+                if (!username || !password) {
+                    alert("请输入用户名和密码！");
+                    return;
+                }
+
+                // 发送AJAX请求到后端进行验证
+                $.ajax({
+                    url: "http://127.0.0.1:8000/api/login",
+                    type: "get",
+                    data: {
+                        name: username,
+                        password: password,
+                        al: false,
+                        session: sessionid,
+                        sig: sig,
+                        token: token,
+                        scene: "login"
+                    },
+                    success: function (res) {
+                        // 根据返回结果判断是否验证通过
+                        if (res.code === 0) {
+                            alert("登录成功！");
+                        } else {
+                            alert(res.message);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+<!-- 登录表单-->
+<form method="post" class="login-form">
+    <div class="form-group">
+        <label for="username" class="form-label">用户名</label>
+        <input type="text" id="username" name="username" class="form-input" placeholder="请输入用户名">
+    </div>
+    <div class="form-group">
+        <label for="password" class="form-label">密码</label>
+        <input type="password" id="password" name="password" class="form-input" placeholder="请输入密码">
+    </div>
+    <div id="nc" class="nc-scale"></div>
+    <div class="form-group">
+        <button type="button" onclick="nc.reload()">刷新</button>
+        <button type="button" onclick="nc.reset()">重置</button>
+    </div>
+    <div class="form-group">
+        <button type="submit" id="login-btn" class="form-button">登录</button>
+    </div>
+</form>
+</body>
+</html>
