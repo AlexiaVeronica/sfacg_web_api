@@ -2,14 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>阿里云滑块验证示例</title>
-    <!-- 引入 jQuery库 -->
+    <title>菠萝包web登入</title>
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-    <!-- 引入阿里云滑块验证JS SDK -->
     <script src="https://g.alicdn.com/AWSC/AWSC/awsc.js"></script>
 
-    <!-- 样式定义 -->
     <style>
         .login-form {
             width: 400px;
@@ -74,26 +71,12 @@
         }
     </style>
 
-    <!-- JS代码定义 -->
     <script>
-        // 阿里云滑块验证回调函数
-        // 存储滑块验证后得到的session和token
         let sessionid;
         let token;
         let sig;
 
-        // 阿里云滑块验证回调函数
-        function onAWSCaptchaVerify(data) {
-            console.log(data)
-            // 存储session和token值
-            sessionid = data.csessionid;
-            token = data.sig;
-            console.log("Session ID: " + sessionid);
-            console.log("Token: " + token);
-        }
 
-
-        // 页面加载完成后初始化阿里云滑块验证组件
         $(document).ready(function () {
             AWSC.use("nc", function (state, module) {
                 window.nc = module.init({
